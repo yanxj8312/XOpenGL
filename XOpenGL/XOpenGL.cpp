@@ -102,7 +102,7 @@ int main()
 
 	XGLVAO* vao = new XGLVAO();
 	vao->AddVertex3D(vertex, 4, 0);
-	vao->AddVertex3D(vertex, 4, 1);
+	vao->AddVertex3D(vertexUV, 4, 1);
 	vao->SetIndex(index, 6);
 
 	XGLProgram* program = new XGLProgram(vertexShader, fragmentShader);
@@ -132,7 +132,6 @@ int main()
 	glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,imgWidth,imgHeight,0,GL_RGB,GL_UNSIGNED_BYTE,imgData);
 
 	//将texture 数据传入shader
-
 
 	while (!glfwWindowShouldClose(window)) //循环处理窗口关闭事件
 	{
