@@ -40,8 +40,8 @@ int main()
 	
 	//GLuint fshader = glCreateShader(GL_FRAGMENT_SHADER); //创建片源着色器
 
-	char* vertexShader = SHADER(
-		#version 330\n
+	char* vertexShader = R"(
+		#version 330
 		uniform float a;
 		layout(location = 0) in vec3 pos;
 		layout(location = 1) in vec3 uvPos;
@@ -54,10 +54,10 @@ int main()
 			float _a = 1;
 			gl_Position = vec4(pos.x*_a,pos.y*_a,pos.z*_a,1.0);
 		}
-	);
+	)";
 
-	char* fragmentShader = SHADER(
-		#version 330\n
+	char* fragmentShader = R"(
+		#version 330
 		out vec4 rgbaColor;
 		in vec3 outPos;
 		in vec3 outUVPos;
@@ -72,7 +72,7 @@ int main()
 			rgbaColor = vec4(outPos, 1.0);
 			rgbaColor = color;
 		}
-	);
+	)";
 
 	//顶点坐标数组 
 	//float vertex[] = {
