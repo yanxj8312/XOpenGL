@@ -27,8 +27,8 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	int windowWidth = 1280;
-	int windowHeight = 720;
+	int windowWidth = 400;
+	int windowHeight = 500;
 
 	//创建窗口
 	GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "opengl window",NULL, NULL);
@@ -49,36 +49,71 @@ int main()
 		uniform float a;
 		layout(location = 0) in vec3 pos;
 		layout(location = 1) in vec3 uvPos;
-		out vec3 outPos;
 		out vec3 outUVPos;
 		void main() 
 		{
-			outPos = pos;
 			outUVPos = uvPos;
-			//float _a = 1;
 			gl_Position = vec4(pos.x,pos.y,pos.z,1.0);
+			//gl_Position = vec4(pos,1.0);
 		}
 	)";
 
 	char* fragmentShader = R"(
 		#version 330
 		out vec4 rgbaColor;
-		in vec3 outPos;
+
 		in vec3 outUVPos;
 		in vec2 outWandH;
 
 		//外部传入的变量都使用uniform表示
 		uniform int width;
 		uniform int height;
-		uniform sampler2D text;
+		uniform sampler2D inputtext;
+		sampler2D outtext;
 		void main() 
 		{
 			vec2 singleStepOffset = vec2(1.0/float(width),1.0/float(height));
+
+			vec2 pixdata[20];
+
+			pixdata[0] = inputtext.xy + singleStepOffset * vec2(0.0,-10.0);
+			pixdata[1] = inputtext.xy + singleStepOffset * vec2(0.0,10.0);
+			pixdata[2] = inputtext.xy + singleStepOffset * vec2(-10.0,0.0);
+			pixdata[3] = inputtext.xy + singleStepOffset * vec2(10.0,0.0);
+			pixdata[4] = inputtext.xy + singleStepOffset * vec2(5.0,-8.0);
+			pixdata[5] = inputtext.xy + singleStepOffset * vec2(5.0,8.0);
+			pixdata[6] = inputtext.xy + singleStepOffset * vec2(-5.0,8.0);
+			pixdata[7] = inputtext.xy + singleStepOffset * vec2(-5.0,-8.0);
+			pixdata[8] = inputtext.xy + singleStepOffset * vec2(8.0,-5.0);
+			pixdata[9] = inputtext.xy + singleStepOffset * vec2(8.0,5.0);
+			pixdata[10] = inputtext.xy + singleStepOffset * vec2(-8.0,5.0);
+			pixdata[11] = inputtext.xy + singleStepOffset * vec2(8.0,-5.0);
+			pixdata[12] = inputtext.xy + singleStepOffset * vec2(0.0,-6.0);
+			pixdata[13] = inputtext.xy + singleStepOffset * vec2(0.0,6.0);
+			pixdata[14] = inputtext.xy + singleStepOffset * vec2(6.0,0.0);
+			pixdata[15] = inputtext.xy + singleStepOffset * vec2(-6.0,-10.0);
+			pixdata[16] = inputtext.xy + singleStepOffset * vec2(-4.0,-4.0);
+			pixdata[17] = inputtext.xy + singleStepOffset * vec2(-4.0,4.0);
+			pixdata[18] = inputtext.xy + singleStepOffset * vec2(4.0,-4.0);
+			pixdata[19] = inputtext.xy + singleStepOffset * vec2(4.0,4.0);
+			
+			//计算平均值
+			vec4 currentColor = texture2D(inputtext,outUVPos.xy);
 			//纹理坐标
-			vec2 uv = vec2(outUVPos.x,outUVPos.y);
-			vec4 color = texture(text,uv);
-			//rgbaColor = vec4(outPos, 1.0);
-			rgbaColor = color;
+			//vec2 uv = vec2(outUVPos.x,outUVPos.y);
+			//vec4 color = texture(text,uv);
+
+			vec3 rgb = currentColor.rgb;
+
+			//计算坐标颜色的总和
+			for(int i = 0;  i < 20 ; i++)
+			{
+				rgb += texture2D(inputtext,pixdata[i].xy).rgb;
+			}
+
+			vec4 blur = vec4(rgb* 1.0 / 21.0, currentColor.a);
+
+			rgbaColor = blur;
 		}
 	)";
 
@@ -174,11 +209,11 @@ int main()
 		program->UseProgram(); //切换program
 
 		//传入uniform变量 注意是在绘制的时候传入该值
-		GLuint uniforma = glGetUniformLocation(program->program,"a");
-		glUniform1f(uniforma,aa);
-		aa+=0.003;
+		//GLuint uniforma = glGetUniformLocation(program->program,"a");
+		//glUniform1f(uniforma,aa);
+		//aa+=0.003;
 
-		GLuint textureLoc = glGetUniformLocation(program->program,"text");
+		GLuint textureLoc = glGetUniformLocation(program->program,"inputtext");
 
 		//激活0号纹理单元
 		glActiveTexture(GL_TEXTURE0);
